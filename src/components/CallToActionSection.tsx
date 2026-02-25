@@ -110,7 +110,7 @@ const CallToActionSection = () => {
                     </div>
                     <div>
                       <p className="text-gray-900 font-light">Correo electrónico</p>
-                      <p className="text-gray-600 text-sm font-light">hola@sanatuquingar.com</p>
+                      <p className="text-gray-600 text-sm font-light">sanatuquingar@gmail.com</p>
                     </div>
                   </div>
 
@@ -139,7 +139,7 @@ const CallToActionSection = () => {
                     </h4>
                     <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                       <p className="text-gray-600 font-light italic">
-                        &quot;Hola SanaTú Quingar, vi tu página y me gustaría recibir información de tus servicios&quot;
+                        &quot;Hola SanaTú, vi tu página y me gustaría recibir información de tus servicios&quot;
                       </p>
                     </div>
                   </div>
@@ -170,7 +170,7 @@ const CallToActionSection = () => {
           {/* Separador sutil */}
           <div className="mt-24 pt-16 border-t border-gray-100">
             <div className="text-center">
-              <p className="text-sm text-gray-500 font-light mb-2">
+              <p className="text-xl text-gray-500 font-light mb-2">
                 &quot;Sanar es volverte habitable y seguro para ti mismo&quot;
               </p>
               <p className="text-gray-900 font-light">
