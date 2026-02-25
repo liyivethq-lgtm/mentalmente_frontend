@@ -420,17 +420,6 @@ const MedicalRecordPDF: React.FC<Props> = ({ record, baseUrl }) => {
             <Text style={styles.fieldLabel}>Evolución del paciente</Text>
             <Text style={styles.fieldValueMultiline}>{record.evolution || '—'}</Text>
           </View>
-          <View style={{ marginTop: 20 }}>
-            <Text style={[styles.fieldLabel, { marginBottom: 10 }]}>Progreso del tratamiento</Text>
-            <View style={styles.progressChart}>
-              {progressData.map((value, i) => (
-                <View key={i} style={{ alignItems: 'center' }}>
-                  <View style={[styles.bar, { height: value * 0.8 }]} />
-                  <Text style={styles.barLabel}>{months[i]}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
         </View>
 
         {/* Profesionales */}
