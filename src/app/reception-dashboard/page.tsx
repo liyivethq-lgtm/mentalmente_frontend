@@ -14,9 +14,7 @@ import {
   Printer,
   Calendar,
   BarChart2,
-  Settings,
   LogOut,
-  Bell,
   Menu,
   ChevronLeft,
   ChevronRight,
@@ -32,7 +30,6 @@ import MedicalRecordDetailsModal from '@/components/MedicalRecordDetailsModal';
 
 const DashboardReceptionMentalmentePage = () => {
   const [viewMode, setViewMode] = useState('grid');
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
