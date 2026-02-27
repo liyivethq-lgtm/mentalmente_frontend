@@ -206,8 +206,8 @@ const DashboardReceptionMentalmentePage = () => {
                         setIsMenuOpen(false);
                       }}
                       className={`w-full flex items-center space-x-3 px-6 py-3 transition-all ${activeSection === item.id
-                          ? 'bg-[#bec5a4]/10 text-[#bec5a4] border-l-4 border-[#bec5a4]'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-[#bec5a4]'
+                        ? 'bg-[#bec5a4]/10 text-[#bec5a4] border-l-4 border-[#bec5a4]'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-[#bec5a4]'
                         }`}
                     >
                       <span className={activeSection === item.id ? 'text-[#bec5a4]' : 'text-gray-400'}>{item.icon}</span>
@@ -244,8 +244,8 @@ const DashboardReceptionMentalmentePage = () => {
                 <button
                   onClick={() => router.push(item.href)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${activeSection === item.id
-                      ? 'bg-gradient-to-r from-[#bec5a4] to-[#aab38c] text-white shadow-md'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-[#bec5a4]'
+                    ? 'bg-gradient-to-r from-[#bec5a4] to-[#aab38c] text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-[#bec5a4]'
                     }`}
                 >
                   <span className={activeSection === item.id ? 'text-white' : 'text-gray-400'}>{item.icon}</span>
@@ -299,14 +299,6 @@ const DashboardReceptionMentalmentePage = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className="p-2 rounded-xl hover:bg-gray-100 relative transition-colors"
-            >
-              <Bell size={20} className="text-gray-600" />
-              <span className="absolute top-1 right-1 bg-[#bec5a4] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
-            </button>
-
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center space-x-2"
@@ -381,8 +373,8 @@ const DashboardReceptionMentalmentePage = () => {
                     <button
                       key={filter.id}
                       className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${filter.id === activeSection
-                          ? 'bg-[#bec5a4] text-white shadow-md'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-[#bec5a4] text-white shadow-md'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     >
                       {filter.name}
@@ -561,8 +553,8 @@ const DashboardReceptionMentalmentePage = () => {
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(p => p - 1)}
                     className={`p-2 rounded-lg transition-all ${currentPage === 1
-                        ? 'text-gray-300 cursor-not-allowed'
-                        : 'text-gray-600 hover:bg-[#bec5a4] hover:text-white'
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : 'text-gray-600 hover:bg-[#bec5a4] hover:text-white'
                       }`}
                   >
                     <ChevronLeft size={18} />
@@ -574,8 +566,8 @@ const DashboardReceptionMentalmentePage = () => {
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(p => p + 1)}
                     className={`p-2 rounded-lg transition-all ${currentPage === totalPages
-                        ? 'text-gray-300 cursor-not-allowed'
-                        : 'text-gray-600 hover:bg-[#bec5a4] hover:text-white'
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : 'text-gray-600 hover:bg-[#bec5a4] hover:text-white'
                       }`}
                   >
                     <ChevronRight size={18} />
