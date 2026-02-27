@@ -185,9 +185,6 @@ const MedicalRecordPDF: React.FC<Props> = ({ record, baseUrl }) => {
     return format(new Date(date), 'dd/MM/yyyy');
   };
 
-  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
-  const progressData = [25, 30, 45, 60, 75, 90];
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
