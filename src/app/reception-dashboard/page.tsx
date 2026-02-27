@@ -328,11 +328,6 @@ const DashboardReceptionMentalmentePage = () => {
               </div>
               <div className="py-2">
                 <button
-                  className="w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center text-gray-600 hover:text-[#bec5a4] transition-colors"
-                >
-                  <Settings size={16} className="mr-3 text-gray-400" /> Configuración
-                </button>
-                <button
                   onClick={() => logout()}
                   className="w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center text-gray-600 hover:text-red-500 transition-colors"
                 >
