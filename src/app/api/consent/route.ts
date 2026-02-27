@@ -2,180 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { ConsentType, Prisma } from '@prisma/client';
 import { createHash } from 'crypto';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { put } from '@vercel/blob';
 
 function generateHash(content: string): string {
   return createHash('sha256').update(content).digest('hex');
 }
 
-// Deshabilitar el bodyParser para poder usar FormData
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-export async function POST(req: NextRequest) {
-  try {
-    // Detectar si es multipart/form-data
-    const contentType = req.headers.get('content-type') || '';
-    if (contentType.includes('multipart/form-data')) {
-      // Procesar como FormData
-      const formData = await req.formData();
-      const medicalRecordId = formData.get('medicalRecordId') as string;
-      const signedByName = formData.get('signedByName') as string;
-      const signedByDocument = formData.get('signedByDocument') as string;
-      const file = formData.get('file') as File;
-
-      if (!medicalRecordId || !signedByName || !signedByDocument || !file) {
-        return NextResponse.json(
-          { error: 'Faltan campos requeridos' },
-          { status: 400 }
-        );
-      }
-
-      // Validar existencia de la historia clínica
-      const medicalRecord = await prisma.medicalRecord.findUnique({
-        where: { id: parseInt(medicalRecordId) },
-      });
-      if (!medicalRecord) {
-        return NextResponse.json(
-          { error: 'Historia clínica no encontrada' },
-          { status: 404 }
-        );
-      }
-
-      // Guardar el archivo en el sistema de archivos
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      // Crear nombre único para el archivo
-      const timestamp = Date.now();
-      const ext = path.extname(file.name);
-      const filename = `consent-${medicalRecordId}-${timestamp}${ext}`;
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'consents');
-      const filePath = path.join(uploadDir, filename);
-
-      // Asegurar que el directorio existe
-      await mkdir(uploadDir, { recursive: true });
-
-      // Escribir archivo
-      await writeFile(filePath, buffer);
-
-      // URL pública
-      const pdfUrl = `/uploads/consents/${filename}`;
-
-      // Crear un documento snapshot simple (podemos generar uno genérico)
-      const htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="text-align: center;">SANATÚ SAS – CONSENTIMIENTO INFORMADO</h2>
-          <p><strong>FECHA:</strong> ${new Date().toLocaleDateString('es-CO')}</p>
-          <p><strong>CIUDAD:</strong> Quibdó, Chocó</p>
-          <p>Yo, <strong>${signedByName}</strong>, identificado(a) con la cédula número <strong>${signedByDocument}</strong>, declaro que acepto recibir atención psicológica por parte de SANATÚ SAS.</p>
-          <p>Documento firmado adjunto: ${file.name}</p>
-        </div>
-      `;
-
-      const documentHash = generateHash(htmlContent + pdfUrl);
-      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-      const userAgent = req.headers.get('user-agent') || 'unknown';
-
-      // Guardar en base de datos
-      const consentRecord = await prisma.consentRecord.create({
-        data: {
-          medicalRecordId: parseInt(medicalRecordId),
-          templateId: (await getOrCreateTemplate()).id, // función auxiliar
-          signedByName,
-          signedByDocument,
-          documentSnapshot: htmlContent,
-          pdfUrl,
-          signatureBase64: null,
-          documentHash,
-          signedFromIp: ip,
-          signedUserAgent: userAgent,
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        consentId: consentRecord.id,
-        message: 'Consentimiento guardado exitosamente',
-      });
-    } else {
-      // Procesar como JSON (firma digital)
-      const body = await req.json();
-      const { medicalRecordId, signedByName, signedByDocument, signatureBase64 } = body;
-
-      if (!medicalRecordId || !signedByName || !signedByDocument || !signatureBase64) {
-        return NextResponse.json(
-          { error: 'Faltan campos requeridos' },
-          { status: 400 }
-        );
-      }
-
-      // Validar existencia de la historia clínica
-      const medicalRecord = await prisma.medicalRecord.findUnique({
-        where: { id: parseInt(medicalRecordId) },
-      });
-      if (!medicalRecord) {
-        return NextResponse.json(
-          { error: 'Historia clínica no encontrada' },
-          { status: 404 }
-        );
-      }
-
-      // Obtener o crear plantilla
-      const template = await getOrCreateTemplate();
-
-      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-      const userAgent = req.headers.get('user-agent') || 'unknown';
-
-      // Fecha actual formateada
-      const today = new Date();
-      const formattedDate = today.toLocaleDateString('es-CO', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      }).replace(/\//g, ' / ');
-
-      const finalHtml = template.htmlContent
-        .replace('__FECHA__', formattedDate)
-        .replace('__PACIENTE__', signedByName)
-        .replace('__DOCUMENTO__', signedByDocument);
-
-      const documentHash = generateHash(finalHtml + (signatureBase64 || ''));
-
-      const consentRecord = await prisma.consentRecord.create({
-        data: {
-          medicalRecordId: parseInt(medicalRecordId),
-          templateId: template.id,
-          signedByName,
-          signedByDocument,
-          documentSnapshot: finalHtml,
-          signatureBase64,
-          signedFromIp: ip,
-          signedUserAgent: userAgent,
-          documentHash,
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        consentId: consentRecord.id,
-        message: 'Consentimiento guardado exitosamente',
-      });
-    }
-  } catch (error) {
-    console.error('Error guardando consentimiento:', error);
-    return NextResponse.json(
-      { error: 'Error interno del servidor' },
-      { status: 500 }
-    );
-  }
-}
-
-// Función auxiliar para obtener o crear la plantilla (reutilizada)
 async function getOrCreateTemplate() {
   const templateTitle = 'Consentimiento Informado - Atención Psicológica';
   let template = await prisma.consentTemplate.findFirst({
@@ -213,6 +51,150 @@ async function getOrCreateTemplate() {
     });
   }
   return template;
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const contentType = req.headers.get('content-type') || '';
+
+    if (contentType.includes('multipart/form-data')) {
+      // Subida de archivo (consentimiento escaneado)
+      const formData = await req.formData();
+      const medicalRecordId = formData.get('medicalRecordId') as string;
+      const signedByName = formData.get('signedByName') as string;
+      const signedByDocument = formData.get('signedByDocument') as string;
+      const file = formData.get('file') as File;
+
+      if (!medicalRecordId || !signedByName || !signedByDocument || !file) {
+        return NextResponse.json(
+          { error: 'Faltan campos requeridos' },
+          { status: 400 }
+        );
+      }
+
+      const medicalRecord = await prisma.medicalRecord.findUnique({
+        where: { id: parseInt(medicalRecordId) },
+      });
+      if (!medicalRecord) {
+        return NextResponse.json(
+          { error: 'Historia clínica no encontrada' },
+          { status: 404 }
+        );
+      }
+
+      // Subir archivo a Vercel Blob
+      const blob = await put(file.name, file, {
+        access: 'public',
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
+
+      const pdfUrl = blob.url;
+
+      // Snapshot simple del documento
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="text-align: center;">SANATÚ SAS – CONSENTIMIENTO INFORMADO</h2>
+          <p><strong>FECHA:</strong> ${new Date().toLocaleDateString('es-CO')}</p>
+          <p><strong>CIUDAD:</strong> Quibdó, Chocó</p>
+          <p>Yo, <strong>${signedByName}</strong>, identificado(a) con la cédula número <strong>${signedByDocument}</strong>, declaro que acepto recibir atención psicológica por parte de SANATÚ SAS.</p>
+          <p>Documento firmado adjunto: ${file.name}</p>
+        </div>
+      `;
+
+      const documentHash = generateHash(htmlContent + pdfUrl);
+      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const userAgent = req.headers.get('user-agent') || 'unknown';
+
+      const template = await getOrCreateTemplate();
+
+      const consentRecord = await prisma.consentRecord.create({
+        data: {
+          medicalRecordId: parseInt(medicalRecordId),
+          templateId: template.id,
+          signedByName,
+          signedByDocument,
+          documentSnapshot: htmlContent,
+          pdfUrl,
+          signatureBase64: null,
+          documentHash,
+          signedFromIp: ip,
+          signedUserAgent: userAgent,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        consentId: consentRecord.id,
+        message: 'Consentimiento guardado exitosamente',
+      });
+    } else {
+      // Firma digital (JSON)
+      const body = await req.json();
+      const { medicalRecordId, signedByName, signedByDocument, signatureBase64 } = body;
+
+      if (!medicalRecordId || !signedByName || !signedByDocument || !signatureBase64) {
+        return NextResponse.json(
+          { error: 'Faltan campos requeridos' },
+          { status: 400 }
+        );
+      }
+
+      const medicalRecord = await prisma.medicalRecord.findUnique({
+        where: { id: parseInt(medicalRecordId) },
+      });
+      if (!medicalRecord) {
+        return NextResponse.json(
+          { error: 'Historia clínica no encontrada' },
+          { status: 404 }
+        );
+      }
+
+      const template = await getOrCreateTemplate();
+
+      const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+      const userAgent = req.headers.get('user-agent') || 'unknown';
+
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('es-CO', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).replace(/\//g, ' / ');
+
+      const finalHtml = template.htmlContent
+        .replace('__FECHA__', formattedDate)
+        .replace('__PACIENTE__', signedByName)
+        .replace('__DOCUMENTO__', signedByDocument);
+
+      const documentHash = generateHash(finalHtml + (signatureBase64 || ''));
+
+      const consentRecord = await prisma.consentRecord.create({
+        data: {
+          medicalRecordId: parseInt(medicalRecordId),
+          templateId: template.id,
+          signedByName,
+          signedByDocument,
+          documentSnapshot: finalHtml,
+          signatureBase64,
+          signedFromIp: ip,
+          signedUserAgent: userAgent,
+          documentHash,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        consentId: consentRecord.id,
+        message: 'Consentimiento guardado exitosamente',
+      });
+    }
+  } catch (error) {
+    console.error('Error guardando consentimiento:', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function GET(req: NextRequest) {
