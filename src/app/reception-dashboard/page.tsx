@@ -181,8 +181,7 @@ const DashboardReceptionMentalmentePage = () => {
                   />
                 </div>
                 <div>
-                  <h1 className="font-bold text-gray-800">SanaTú</h1>
-                  <p className="text-xs text-gray-500">Historias Clínicas</p>
+                  <p className="text-xs text-gray-500">Liyiveth Quintero Garcia</p>
                 </div>
               </div>
               <button
