@@ -5,7 +5,6 @@ import { useRef, useState } from 'react';
 import { 
   Brain, 
   CheckCircle2,
-  Sparkle,
   ArrowRight,
   Smartphone,
   Scale,
