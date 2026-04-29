@@ -36,36 +36,55 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
   const [signature, setSignature] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isExistingRecord = !!medicalRecordId;
 
-  // Canvas drawing functions (same as before)
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const displayPatientName =
+    isExistingRecord ? propPatientName : localName || '____________________________________________________';
+
+  const displayPatientDocument =
+    isExistingRecord ? propPatientDocument : localDocument || '___________________';
+
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
     setIsDrawing(true);
+
     const rect = canvas.getBoundingClientRect();
-    const x = ('touches' in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = ('touches' in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const draw = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     if (!isDrawing) return;
+
     e.preventDefault();
+
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
     const rect = canvas.getBoundingClientRect();
-    const x = ('touches' in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = ('touches' in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+
     ctx.lineTo(x, y);
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 2;
@@ -79,8 +98,10 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
   const clearSignature = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setSignature(null);
   };
@@ -88,36 +109,33 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
   const saveSignature = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
     const dataUrl = canvas.toDataURL('image/png');
     setSignature(dataUrl);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       setFile(e.target.files[0]);
     }
   };
 
   const handleSubmit = async () => {
-    if (method === 'signature') {
-      if (!signature) {
-        alert('Por favor, firme el documento');
-        return;
-      }
-    } else {
-      if (!file) {
-        alert('Por favor, seleccione un archivo');
-        return;
-      }
+    if (method === 'signature' && !signature) {
+      alert('Por favor, firme el documento');
+      return;
+    }
+
+    if (method === 'upload' && !file) {
+      alert('Por favor, seleccione un archivo');
+      return;
     }
 
     setIsSubmitting(true);
 
     try {
       if (isExistingRecord) {
-        // Modo con ID: enviar a la API
         if (method === 'signature') {
-          // Enviar como JSON
           const response = await fetch('/api/consent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -128,10 +146,13 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
               signatureBase64: signature,
             }),
           });
-          if (!response.ok) throw new Error('Error al guardar el consentimiento');
+
+          if (!response.ok) {
+            throw new Error('Error al guardar el consentimiento');
+          }
         } else {
-          // Enviar como multipart/form-data
           const formData = new FormData();
+
           formData.append('medicalRecordId', String(medicalRecordId));
           formData.append('signedByName', propPatientName || '');
           formData.append('signedByDocument', propPatientDocument || '');
@@ -141,33 +162,28 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
             method: 'POST',
             body: formData,
           });
-          if (!response.ok) throw new Error('Error al subir el archivo');
+
+          if (!response.ok) {
+            throw new Error('Error al subir el archivo');
+          }
         }
+
         alert('Consentimiento guardado exitosamente');
-        if (onSuccess) onSuccess();
+        onSuccess?.();
       } else {
-        // Modo sin ID: validar campos
         if (!localName.trim() || !localDocument.trim()) {
           alert('Debe ingresar nombre y documento del paciente');
           setIsSubmitting(false);
           return;
         }
+
         if (method === 'signature') {
-          if (!signature) {
-            alert('Debe firmar el documento');
-            setIsSubmitting(false);
-            return;
-          }
-          if (onSubmit) {
-            onSubmit({
-              patientName: localName,
-              patientDocument: localDocument,
-              signatureBase64: signature,
-            });
-          }
+          onSubmit?.({
+            patientName: localName,
+            patientDocument: localDocument,
+            signatureBase64: signature as string,
+          });
         } else {
-          // Modo sin ID y con archivo: no implementado aún, pero podríamos subir el archivo también
-          // Por ahora, simplemente mostramos alerta de que no está soportado
           alert('Modo sin ID con archivo no soportado en esta versión');
           setIsSubmitting(false);
           return;
@@ -188,24 +204,30 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
           <h2 className="text-2xl font-bold bg-gradient-to-r from-[#bec5a4] to-[#a0a78c] bg-clip-text text-transparent">
             Consentimiento Informado
           </h2>
+
           <div className="flex gap-2">
             <a
-              href="/SANATÚ SAS – CONSENTIMIENTO INFORMADO (1).docx"
+              href="/CONSENTIMIENTO INFORMADO ATENCIÓN PRESENCIAL .docx"
               download
               className="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-colors"
               title="Descargar plantilla para diligenciar"
             >
               <FaDownload />
             </a>
-            <button onClick={onCancel} className="p-2 rounded-full hover:bg-gray-100">
+
+            <button
+              type="button"
+              onClick={onCancel}
+              className="p-2 rounded-full hover:bg-gray-100"
+            >
               <FaTimes className="text-gray-600" />
             </button>
           </div>
         </div>
 
-        {/* Selector de método */}
         <div className="flex border-b border-gray-200 mb-6">
           <button
+            type="button"
             className={`py-2 px-4 font-medium text-sm focus:outline-none ${
               method === 'signature'
                 ? 'border-b-2 border-[#bec5a4] text-[#bec5a4]'
@@ -215,7 +237,9 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
           >
             Firma digital
           </button>
+
           <button
+            type="button"
             className={`py-2 px-4 font-medium text-sm focus:outline-none ${
               method === 'upload'
                 ? 'border-b-2 border-[#bec5a4] text-[#bec5a4]'
@@ -228,33 +252,99 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
         </div>
 
         <div className="space-y-6">
-          {/* Texto del consentimiento (siempre visible) */}
-          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-            <h3 className="text-center font-bold text-lg mb-4">SANATÚ SAS – CONSENTIMIENTO INFORMADO</h3>
-            <p><strong>FECHA:</strong> ____ / ____ / 20____</p>
-            <p><strong>CIUDAD:</strong> Quibdó, Chocó</p>
+          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 text-sm text-gray-800 leading-relaxed">
+            <h3 className="text-center font-bold text-lg mb-5 uppercase">
+              Consentimiento Informado para Atención Psicológica
+            </h3>
+
             <p>
-              Yo, <strong>{isExistingRecord ? propPatientName : localName || '____________________'}</strong>, mayor de edad, identificado(a) con la cédula número{' '}
-              <strong>{isExistingRecord ? propPatientDocument : localDocument || '____________________'}</strong>, por medio de este documento declaro que acepto de manera voluntaria
-              recibir atención psicológica por parte de SANATÚ SAS (NIT 902010331-8).
+              <strong>FECHA:</strong> ____ / ____ / ____
             </p>
-            <p>Entiendo y acepto que:</p>
-            <ol className="list-decimal pl-5 space-y-2">
-              <li><strong>Privacidad:</strong> Todo lo que hablemos es confidencial...</li>
-              <li><strong>Voluntad:</strong> Puedo hacer las preguntas que quiera...</li>
-              <li><strong>Trato Digno:</strong> Recibiré una atención respetuosa...</li>
-              <li><strong>Uso de Datos:</strong> Autorizo a SANATÚ SAS para usar mis datos básicos...</li>
+
+            <p>
+              <strong>CIUDAD;</strong> Quibdó, Chocó: ____________________
+            </p>
+
+            <p className="mt-4">
+              Yo, <strong>{displayPatientName}</strong> mayor de edad,
+              identificado(a) con la cédula número{' '}
+              <strong>{displayPatientDocument}</strong>, por medio de este
+              documento declaro que acepto de manera voluntaria recibir atención
+              psicológica por parte de la psicóloga{' '}
+              <strong>LIYIVETH QUINTERO GARCÍA</strong>, identificada con C.C.
+              1.077.465.202 y Tarjeta Profesional No. 229742
+            </p>
+
+            <p className="mt-4 font-semibold">
+              Entiendo y acepto las siguientes condiciones del servicio:
+            </p>
+
+            <ol className="list-decimal pl-5 space-y-3 mt-3">
+              <li>
+                <strong>Confidencialidad:</strong> Toda la información compartida
+                en las sesiones está protegida por el secreto profesional (Ley
+                1090 de 2006). Solo podrá ser revelada en las excepciones que la
+                ley colombiana establece: cuando exista un riesgo inminente para
+                mi integridad física o la de terceros, o por requerimiento
+                judicial expreso.
+              </li>
+
+              <li>
+                <strong>Autonomía:</strong> Tengo el derecho de realizar todas
+                las preguntas que considere necesarias sobre mi proceso, las
+                técnicas utilizadas y los objetivos terapéuticos. Así mismo,
+                puedo dar por terminada la relación profesional en el momento que
+                lo desee.
+              </li>
+
+              <li>
+                <strong>Calidad de la Atención:</strong> Recibiré un trato
+                digno, respetuoso y basado en principios éticos y científicos,
+                orientado siempre hacia mi bienestar y autonomía emocional.
+              </li>
+
+              <li>
+                <strong>Tratamiento de Datos Personales:</strong> Autorizo a la
+                profesional Liyiveth Quintero García para recolectar, almacenar y
+                utilizar mis datos personales y de contacto exclusivamente para
+                fines de registro en la historia clínica, agendamiento de citas y
+                comunicaciones relacionadas con el proceso terapéutico, bajo las
+                normas de protección de datos (Ley 1581 de 2012).
+              </li>
+
+              <li>
+                <strong>Honorarios:</strong> Me comprometo a cumplir con los
+                pagos acordados por concepto de honorarios profesionales en los
+                tiempos y medios establecidos.
+              </li>
             </ol>
-            <p className="mt-4">Al firmar, confirmo que he leído (o me han leído) y comprendido este documento y que estoy de acuerdo con lo aquí escrito.</p>
+
+            <p className="mt-4">
+              Al firmar, confirmo que he leído y comprendido la totalidad de este
+              documento, que he podido aclarar mis dudas y que acepto los términos
+              aquí descritos de manera consciente y voluntaria.
+            </p>
+
+            <div className="mt-6">
+              <p className="font-semibold">FIRMA DEL PACIENTE:</p>
+              <p className="mt-6">________________________________________</p>
+              <p className="mt-2">C.C. No. ____________________</p>
+            </div>
+
+            <div className="mt-6">
+              <p className="font-semibold">FIRMA DE LA PROFESIONAL:</p>
+              <p className="mt-4 font-semibold">LIYIVETH QUINTERO GARCÍA</p>
+              <p>Psicóloga | T.P. No. 229742</p>
+            </div>
           </div>
 
-          {/* Campos de nombre y documento SOLO si no hay medicalRecordId */}
           {!isExistingRecord && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-800">
                   Nombre del paciente <span className="text-red-500">*</span>
                 </label>
+
                 <input
                   type="text"
                   value={localName}
@@ -264,10 +354,12 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
                   required
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1 text-gray-800">
                   Documento de identidad <span className="text-red-500">*</span>
                 </label>
+
                 <input
                   type="text"
                   value={localDocument}
@@ -280,12 +372,12 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
             </div>
           )}
 
-          {/* Contenido según método */}
           {method === 'signature' ? (
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-800">
                 Firma del paciente / consultante
               </label>
+
               <div className="border border-gray-300 rounded-xl p-2 bg-white">
                 <canvas
                   ref={canvasRef}
@@ -302,6 +394,7 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
                   onTouchCancel={stopDrawing}
                 />
               </div>
+
               <div className="flex justify-between mt-2">
                 <button
                   type="button"
@@ -310,6 +403,7 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
                 >
                   <FaTimes className="mr-1" /> Limpiar
                 </button>
+
                 <button
                   type="button"
                   onClick={saveSignature}
@@ -318,15 +412,19 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
                   <FaCheck className="mr-1" /> Guardar firma
                 </button>
               </div>
+
               {signature && (
-                <p className="text-sm text-green-600 mt-2">✓ Firma guardada</p>
+                <p className="text-sm text-green-600 mt-2">
+                  ✓ Firma guardada
+                </p>
               )}
             </div>
           ) : (
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-800">
-                Subir archivo del consentimiento firmado (PDF, imagen)
+                Subir archivo del consentimiento firmado PDF, imagen o DOCX
               </label>
+
               <div className="border border-gray-300 rounded-xl p-4 bg-white">
                 <input
                   type="file"
@@ -335,6 +433,7 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
                   accept=".pdf,.jpg,.jpeg,.png,.docx"
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#bec5a4] file:text-white hover:file:bg-[#a0a78c]"
                 />
+
                 {file && (
                   <p className="text-sm text-green-600 mt-2">
                     ✓ Archivo seleccionado: {file.name}
@@ -344,13 +443,17 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
             </div>
           )}
 
-          {/* Firma del profesional (estática) */}
           <div className="border-t pt-4">
             <p className="text-center text-gray-600">
               _____________________________________
             </p>
-            <p className="text-center text-sm">Firma del Profesional (SANATÚ SAS)</p>
-            <p className="text-center text-sm">Psicóloga – T.P. No. 229742</p>
+            <p className="text-center text-sm">Firma de la Profesional</p>
+            <p className="text-center text-sm font-semibold">
+              LIYIVETH QUINTERO GARCÍA
+            </p>
+            <p className="text-center text-sm">
+              Psicóloga | T.P. No. 229742
+            </p>
           </div>
 
           <div className="flex justify-end space-x-4 mt-6">
@@ -361,6 +464,7 @@ const InformedConsent: React.FC<InformedConsentProps> = ({
             >
               Cancelar
             </button>
+
             <button
               type="button"
               onClick={handleSubmit}
