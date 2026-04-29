@@ -4,16 +4,9 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useRef, useState } from 'react';
 import { 
   Brain, 
-  Users, 
-  TrendingUp,
   CheckCircle2,
   Sparkle,
   ArrowRight,
-  Heart,
-  Shield,
-  Target,
-  Zap,
-  Star,
   Smartphone,
   Scale,
   Clock,
@@ -70,12 +63,6 @@ const ServicesSection = () => {
       accentIcon: <Unplug className="w-5 h-5" />
     }
   ];
-
-  const handleWhatsAppClick = () => {
-    const phoneNumber = '+573113266223';
-    const message = encodeURIComponent('¡Hola, Liyiveth! Vengo de tu página SanaTú. Me sentí identificado/a con lo que haces y me gustaría que me acompañaras en mi proceso. ¿Cómo puedo agendar una cita contigo?');
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
-  };
 
   return (
     <motion.section
