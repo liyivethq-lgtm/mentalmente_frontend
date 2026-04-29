@@ -92,7 +92,7 @@ const AboutSection = () => {
                 <div>
                   <h4 className="text-sm font-light text-gray-900 mb-1">Enfoque Integral</h4>
                   <p className="text-xs text-gray-600 font-light">
-                    Combinación única de sensibilidad humana y visión estratégica
+                    Sanar es volverte habitable y seguro para ti mismo
                   </p>
                 </div>
               </div>
@@ -111,7 +111,7 @@ const AboutSection = () => {
               </div>
 
               <h2 className="text-4xl lg:text-5xl font-light tracking-tight text-gray-900">
-                Liyiveth <span className="text-[#bec5a4]">Quintero García</span>
+                Psic. Liyiveth <span className="text-[#bec5a4]">Quintero García</span>
               </h2>
 
               <div className="h-px w-full bg-gradient-to-r from-[#bec5a4]/30 via-gray-300/50 to-transparent" />
@@ -127,12 +127,12 @@ const AboutSection = () => {
               <div className="px-4 py-2 rounded-full bg-[#bec5a4]/10 border border-[#bec5a4]/20">
                 <span className="text-sm font-light text-gray-700">Psicóloga</span>
               </div>
-              <div className="px-4 py-2 rounded-full bg-[#bec5a4]/10 border border-[#bec5a4]/20">
+              {/* <div className="px-4 py-2 rounded-full bg-[#bec5a4]/10 border border-[#bec5a4]/20">
                 <span className="text-sm font-light text-gray-700">Atención a la Primera Infancia</span>
               </div>
               <div className="px-4 py-2 rounded-full bg-[#bec5a4]/10 border border-[#bec5a4]/20">
                 <span className="text-sm font-light text-gray-700">Alta Gerencia en Proyectos Sociales</span>
-              </div>
+              </div> */}
             </motion.div>
 
             {/* Descripción profesional */}
@@ -143,7 +143,7 @@ const AboutSection = () => {
                 transition={{ delay: 0.3 }}
                 className="text-lg text-gray-700 font-light leading-relaxed"
               >
-                Soy <span className="text-[#bec5a4] font-normal">Liyiveth Quintero García</span>, psicóloga con formación técnica en Atención Integral a la Primera Infancia y diplomada en Alta Gerencia en Proyectos Sociales. Mi enfoque combina la <span className="text-gray-900 font-normal">sensibilidad humana</span> con una <span className="text-gray-900 font-normal">visión estratégica</span> de los procesos sociales para lograr una transformación real.
+                Soy <span className="text-[#bec5a4] font-normal">Liyiveth Quintero García</span>, A través de mi Método SanaTú, acompaño a personas que se sienten atrapadas en el vacío emocional de la era digital. Mi enfoque no es poner etiquetas, sino devolverte la autonomía. Entiendo profundamente la frustración y el reto de reconstruirse, y he dedicado mi práctica profesional a perfeccionar métodos de liberación para que logres una seguridad interna que no dependa de situaciones externas.
               </motion.p>
 
               <motion.div
@@ -156,18 +156,9 @@ const AboutSection = () => {
                   <span className="text-xs font-light text-white">Propósito</span>
                 </div>
                 <p className="text-gray-700 font-light leading-relaxed italic">
-                  En <span className="text-[#bec5a4] font-normal">SanaTú</span>, mi propósito es ayudarte a fortalecer tu carácter y autonomía emocional. Parto de una premisa clara: &quot;Sanar es volverte habitable y seguro para ti mismo&quot;.
+                  En <span className="text-[#bec5a4] font-normal">SanaTú</span>, es acompañarte a transformar la sensación de incompetencia en una competencia real. Con mi método SanaTú, no busco calmar tus síntomas; busco que recuperes el dominio de tu vida, aprendas a gestionar el vacío de la era digital y construyas una seguridad interna que no dependa de los resultados inmediatos ni de la aprobación externa.
                 </p>
               </motion.div>
-
-              <motion.p
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-gray-600 font-light leading-relaxed"
-              >
-                Acompaño procesos donde sanar significa soltar lo que no puedes controlar para recuperar el dominio de tu propia vida, brindándote herramientas para que logres una seguridad interna que no dependa de situaciones externas y te permita vivir con verdadera libertad.
-              </motion.p>
             </div>
 
             {/* Llamada a la acción sutil */}
@@ -178,11 +169,12 @@ const AboutSection = () => {
               className="pt-8"
             >
               <a
-                href="#contacto"
                 className="inline-flex items-center group text-[#bec5a4] font-light tracking-wide"
               >
                 <span className="border-b border-transparent group-hover:border-[#bec5a4] transition-all duration-300">
-                  Iniciar un proceso de transformación
+                  ¿Sientes que te esfuerzas al máximo, pero nada es suficiente? Te ayudo a vencer la sensación de incompetencia, gestionar la frustración y recuperar el control frente a las pantallas. <br />
+                  {/* <br /> */}
+                  Psicóloga con experticia en el tratamiento de la frustración y adicciones no sustanciales (redes sociales y juegos).
                 </span>
                 <svg
                   className="w-5 h-5 ml-2 transform group-hover:translate-x-2 transition-transform duration-300"

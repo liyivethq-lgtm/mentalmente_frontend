@@ -14,7 +14,7 @@ const CallToActionSection = () => {
   const WHATSAPP_NUMBER = '3113266223';
 
   const WHATSAPP_MESSAGE = encodeURIComponent(
-    '¡Hola, Liyiveth! Vengo de tu página SanaTú. Me sentí identificado/a con lo que haces y me gustaría que me acompañaras en mi proceso. ¿Cómo puedo agendar una cita contigo?'
+    'Hola Psic. Liyiveth, vi tu página SanaTú y deseo agendar una consulta para trabajar mi proceso de Frustración / Dependencia Digital.'
   );
 
   const handleWhatsAppClick = () => {
@@ -110,7 +110,7 @@ const CallToActionSection = () => {
                     </div>
                     <div>
                       <p className="text-gray-900 font-light">Correo electrónico</p>
-                      <p className="text-gray-600 text-sm font-light">sanatuquingar@gmail.com</p>
+                      <p className="text-gray-600 text-sm font-light">liyivethq@gmail.com</p>
                     </div>
                   </div>
 
@@ -135,11 +135,15 @@ const CallToActionSection = () => {
                 <div className="bg-gradient-to-b from-white to-gray-50/30 border border-gray-200 rounded-2xl p-8 h-full">
                   <div className="mb-8">
                     <h4 className="text-lg font-light text-gray-900 mb-4">
-                      Mensaje preparado:
+                      Enfoque:
                     </h4>
                     <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                       <p className="text-gray-600 font-light italic">
-                        &quot;Hola SanaTú, vi tu página y me gustaría recibir información de tus servicios&quot;
+                        &quot;Dirigido a quienes sienten que van tarde en la vida, que se comparan constantemente o que sienten un vacío a pesar de sus logros&quot;
+                        &quot;Tratamiento para la dependencia a redes sociales, videojuegos y el uso compulsivo del celular como escape de la realidad&quot;
+                        <br />
+                        <br />
+                        &quot;Ayuda profesional para manejar la frustración, el perfeccionismo y la sensación de incompetencia&quot;
                       </p>
                     </div>
                   </div>
@@ -170,12 +174,20 @@ const CallToActionSection = () => {
           {/* Separador sutil */}
           <div className="mt-24 pt-16 border-t border-gray-100">
             <div className="text-center">
-              <p className="text-xl text-gray-500 font-light mb-2">
-                &quot;Sanar es volverte habitable y seguro para ti mismo&quot;
+              <p className="text-sm tracking-widest font-light text-gray-500 uppercase mb-6">
+                Formación Complementaria
               </p>
-              <p className="text-gray-900 font-light">
-                — Liyiveth Quintero García
-              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 rounded-full bg-[#bec5a4]" />
+                  <p className="text-gray-700 font-light">Primera Infancia</p>
+                </div>
+                <div className="hidden sm:block h-px w-12 bg-gray-200" />
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 rounded-full bg-[#bec5a4]" />
+                  <p className="text-gray-700 font-light">Diplomado en Alta Gerencia en Proyectos Sociales</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

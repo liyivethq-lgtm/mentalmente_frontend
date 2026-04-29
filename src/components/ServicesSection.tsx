@@ -13,7 +13,15 @@ import {
   Shield,
   Target,
   Zap,
-  Star
+  Star,
+  Smartphone,
+  Scale,
+  Clock,
+  Smile,
+  Compass,
+  Wifi,
+  Gamepad2,
+  Unplug
 } from 'lucide-react';
 
 const ServicesSection = () => {
@@ -31,51 +39,35 @@ const ServicesSection = () => {
   const services = [
     {
       id: 1,
-      title: "Psicoterapia Individual",
+      title: "Superación de la Frustración e Incompetencia",
       subtitle: "Sanación Personal",
       icon: <Brain className="w-7 h-7" />,
-      description: "Espacios seguros para el autodescubrimiento y transformación emocional",
+      description: "Dirigido a quienes sienten que van tarde en la vida, que se comparan constantemente o que sienten un vacío a pesar de sus logros.",
       color: "#bec5a4",
       lightColor: "rgba(190, 197, 164, 0.08)",
       features: [
-        { text: "Psicoterapia para jóvenes y adultos", icon: <Heart className="w-4 h-4" /> },
-        { text: "Acompañamiento en embarazo y posparto", icon: <Sparkle className="w-4 h-4" /> },
-        { text: "Enfoque de género y diversidad (LGTBIQ+)", icon: <Users className="w-4 h-4" /> },
-        { text: "Apoyo psicológico frente al estigma de ITS", icon: <Shield className="w-4 h-4" /> }
+        { text: "Trabajo con la comparación y el síndrome del impostor", icon: <Scale className="w-4 h-4" /> },
+        { text: "Resignificación del ritmo personal de vida", icon: <Clock className="w-4 h-4" /> },
+        { text: "Gestión del vacío emocional a pesar de los logros", icon: <Smile className="w-4 h-4" /> },
+        { text: "Reconexión con el propósito y la autoestima", icon: <Compass className="w-4 h-4" /> }
       ],
-      accentIcon: <Star className="w-5 h-5" />
+      accentIcon: <Brain className="w-5 h-5" />
     },
     {
       id: 2,
-      title: "Intervención Psicosocial",
-      subtitle: "Transformación Colectiva",
-      icon: <Users className="w-7 h-7" />,
-      description: "Reconstrucción de proyectos de vida y sanación comunitaria",
+      title: "Desintoxicación y Adicciones Digitales",
+      subtitle: "Transformación Digital",
+      icon: <Smartphone className="w-7 h-7" />,
+      description: "Tratamiento para la dependencia a redes sociales, videojuegos y el uso compulsivo del celular como escape de la realidad.",
       color: "#d1d6b9",
       lightColor: "rgba(209, 214, 185, 0.08)",
       features: [
-        { text: "Atención a víctimas del conflicto armado", icon: <Shield className="w-4 h-4" /> },
-        { text: "Reconstrucción de proyecto de vida", icon: <Target className="w-4 h-4" /> },
-        { text: "Intervención en crisis y procesos de duelo", icon: <Heart className="w-4 h-4" /> },
-        { text: "Primeros auxilios psicológicos", icon: <Zap className="w-4 h-4" /> }
+        { text: "Intervención en dependencia a redes sociales", icon: <Wifi className="w-4 h-4" /> },
+        { text: "Tratamiento para la adicción a videojuegos", icon: <Gamepad2 className="w-4 h-4" /> },
+        { text: "Manejo del uso compulsivo del celular", icon: <Smartphone className="w-4 h-4" /> },
+        { text: "Abordaje del escapismo digital y sus raíces emocionales", icon: <Unplug className="w-4 h-4" /> }
       ],
-      accentIcon: <Target className="w-5 h-5" />
-    },
-    {
-      id: 3,
-      title: "Educación y Bienestar",
-      subtitle: "Crecimiento Continuo",
-      icon: <TrendingUp className="w-7 h-7" />,
-      description: "Desarrollo de competencias emocionales y organizacionales",
-      color: "#a8b08c",
-      lightColor: "rgba(168, 176, 140, 0.08)",
-      features: [
-        { text: "Talleres de inteligencia emocional y salud mental", icon: <Brain className="w-4 h-4" /> },
-        { text: "Charlas de prevención de la discriminación", icon: <Users className="w-4 h-4" /> },
-        { text: "Capacitaciones en clima laboral y bienestar humano", icon: <TrendingUp className="w-4 h-4" /> },
-        { text: "Conferencias psicoeducativas", icon: <Sparkle className="w-4 h-4" /> }
-      ],
-      accentIcon: <Sparkle className="w-5 h-5" />
+      accentIcon: <Unplug className="w-5 h-5" />
     }
   ];
 
@@ -100,7 +92,7 @@ const ServicesSection = () => {
           style={{
             backgroundImage: `radial-gradient(circle at 25% 25%, ${services[0].lightColor} 0%, transparent 50%),
                             radial-gradient(circle at 75% 75%, ${services[1].lightColor} 0%, transparent 50%),
-                            radial-gradient(circle at 50% 20%, ${services[2].lightColor} 0%, transparent 50%)`
+                            radial-gradient(circle at 50% 20%, rgba(168, 176, 140, 0.08) 0%, transparent 50%)`
           }}
         />
       </div>
@@ -123,31 +115,10 @@ const ServicesSection = () => {
             </motion.span>
             <div className="h-px w-16 bg-gradient-to-r from-gray-300 to-transparent" />
           </div>
-
-          <motion.h2
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-5xl lg:text-6xl font-light tracking-tight text-gray-900 mb-8"
-          >
-            Tres <span className="relative">
-              <span className="text-[#bec5a4]">frentes</span>
-              <span className="absolute -bottom-2 left-0 w-full h-px bg-gradient-to-r from-[#bec5a4] to-transparent" />
-            </span> de<br />transformación
-          </motion.h2>
-
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="text-xl text-gray-600 font-light leading-relaxed max-w-2xl mx-auto"
-          >
-            Un ecosistema integral de servicios diseñados para acompañar cada etapa de tu camino hacia el bienestar
-          </motion.p>
         </motion.div>
 
-        {/* Grid de servicios - Masterpiece */}
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 mb-32">
+        {/* Grid de servicios */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-32 max-w-4xl mx-auto">
           {services.map((service, index) => (
             <motion.div
               key={service.id}
@@ -233,7 +204,7 @@ const ServicesSection = () => {
                   </p>
                 </div>
 
-                {/* Lista de características - Exquisita */}
+                {/* Lista de características */}
                 <div className="p-8">
                   <div className="space-y-5">
                     {service.features.map((feature, idx) => (
@@ -281,7 +252,7 @@ const ServicesSection = () => {
                       Personalizado
                     </span>
                     <span className="text-xs tracking-widest font-light text-gray-400 uppercase">
-                      {index + 1}/3
+                      {index + 1}/{services.length}
                     </span>
                   </div>
                 </div>
@@ -308,7 +279,6 @@ const ServicesSection = () => {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="relative max-w-3xl mx-auto"
         >
-          {/* Fondo del CTA */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#bec5a4]/5 via-white to-[#d1d6b9]/5 rounded-3xl" />
           <div className="absolute inset-0 border border-gray-200/30 rounded-3xl" />
           
@@ -329,30 +299,7 @@ const ServicesSection = () => {
               Agenda una consulta inicial para diseñar un camino personalizado hacia tu bienestar emocional
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.button
-                onClick={handleWhatsAppClick}
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(190, 197, 164, 0.2)" }}
-                whileTap={{ scale: 0.98 }}
-                className="relative overflow-hidden group px-10 py-5 rounded-xl"
-              >
-                <div 
-                  className="absolute inset-0 bg-gradient-to-r from-[#bec5a4] to-[#d1d6b9] rounded-xl"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#bec5a4] to-[#a8b08c] opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
-                
-                <div className="relative flex items-center justify-center space-x-3">
-                  <span className="text-white font-light tracking-wide text-lg">
-                    Iniciar proceso
-                  </span>
-                  <ArrowRight className="w-5 h-5 text-white transform group-hover:translate-x-2 transition-transform" />
-                </div>
-                
-                {/* Efecto de brillo */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                              translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              </motion.button>
-            </div>
+            
           </div>
         </motion.div>
       </div>
@@ -370,7 +317,7 @@ const ServicesSection = () => {
           </a>
           
           <div className="flex items-center space-x-2">
-            {[...Array(3)].map((_, i) => (
+            {[...Array(services.length)].map((_, i) => (
               <motion.div
                 key={i}
                 animate={{ 
