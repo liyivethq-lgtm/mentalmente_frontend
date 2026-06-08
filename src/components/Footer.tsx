@@ -157,7 +157,7 @@ const Footer = () => {
               derechos reservados.
             </p>
             <p className="text-xs text-gray-300 font-light mt-1">
-              Psicología profesional con enfoque cognitivo conductual
+              Ansiedad Relacional y Manejo del Estrés
             </p>
           </div>
 
