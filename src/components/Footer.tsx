@@ -142,7 +142,7 @@ const Footer = () => {
               <div className="flex items-center space-x-2">
                 <Heart className="w-3.5 h-3.5 text-[#bec5a4]" />
                 <span className="text-xs text-gray-400 font-light">
-                  Atención presencial y virtual
+                  Atención virtual y domiciliaria
                 </span>
               </div>
             </div>
