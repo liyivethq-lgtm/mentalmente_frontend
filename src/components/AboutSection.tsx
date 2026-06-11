@@ -38,7 +38,7 @@ const AboutSection = () => {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-100 to-gray-200">
                 <div className="relative aspect-[3/4] w-full overflow-hidden">
                   <Image
-                    src="/logo-liyi.jpeg"
+                    src="/fondo-bg.jpeg"
                     alt="Liyiveth Quintero García - Psicóloga especialista en Ansiedad Relacional"
                     fill
                     className="object-cover object-center"
@@ -51,9 +51,9 @@ const AboutSection = () => {
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/50 to-transparent">
                   <div className="space-y-3">
                     <div className="h-1 w-24 bg-gradient-to-r from-transparent via-[#bec5a4] to-transparent" />
-                    <p className="text-sm text-white font-light tracking-wider">
+                    {/* <p className="text-sm text-white font-light tracking-wider">
                       ANSIEDAD RELACIONAL Y MANEJO DEL ESTRÉS
-                    </p>
+                    </p> */}
                   </div>
                 </div>
 
