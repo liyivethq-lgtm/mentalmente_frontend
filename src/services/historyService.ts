@@ -37,19 +37,36 @@ export const fetchHistories = async (
   return response.json()
 }
 
-export const createHistory = async (data: CreateHistoryData) => {
+export const createHistory = async (data: CreateHistoryData, signal?: AbortSignal): Promise<MedicalRecord> => {
   const response = await fetch('/api/medical-records', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(data)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+    signal,
+    cache: 'no-store',
   });
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Error al crear historia');
+
+  const rawBody = await response.text();
+  let responseData: Record<string, unknown> = {};
+
+  if (rawBody) {
+    try {
+      responseData = JSON.parse(rawBody) as Record<string, unknown>;
+    } catch {
+      responseData = { error: rawBody };
+    }
   }
-  
-  return response.json();
+
+  if (!response.ok) {
+    const message =
+      (typeof responseData.error === 'string' && responseData.error) ||
+      (typeof responseData.message === 'string' && responseData.message) ||
+      `Error al crear historia clínica (${response.status})`;
+
+    throw new Error(message);
+  }
+
+  return responseData as unknown as MedicalRecord;
 };
 
 export const updateHistory = async (id: number, historyData: UpdateHistoryData) => {

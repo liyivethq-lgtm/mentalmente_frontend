@@ -511,11 +511,15 @@ export async function POST(req: NextRequest) {
 
     // Crear la historia clínica con conversión de tipos.
     const createData = {
-      recordNumber: body.recordNumber as string,
+      recordNumber: String(body.recordNumber).trim(),
         userId,
-        patientName: body.patientName,
-        identificationType: body.identificationType,
-        identificationNumber: body.identificationNumber,
+        patientName: String(body.patientName).trim(),
+        identificationType: typeof body.identificationType === 'string' && body.identificationType.trim()
+          ? body.identificationType.trim()
+          : 'Cédula',
+        identificationNumber: typeof body.identificationNumber === 'string' && body.identificationNumber.trim()
+          ? body.identificationNumber.trim()
+          : 'Pendiente',
         birthDate: body.birthDate ? new Date(body.birthDate) : null,
         age: body.age ? parseInt(body.age) : null,
         educationLevel: body.educationLevel,
@@ -585,20 +589,51 @@ export async function POST(req: NextRequest) {
     } catch (error) {
       if ((error as { code?: string }).code !== 'P2002') throw error;
 
-      newMedicalRecord = await prisma.medicalRecord.create({
-        data: {
-          ...createData,
-          recordNumber: `HC-${randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`,
-        },
+      // Si el cliente reintenta la misma creación (por ejemplo, tras un timeout),
+      // devolver el registro ya creado evita generar borradores duplicados.
+      const existingRecord = await prisma.medicalRecord.findUnique({
+        where: { recordNumber: createData.recordNumber },
       });
+
+      if (existingRecord && existingRecord.userId === userId) {
+        newMedicalRecord = existingRecord;
+      } else {
+        newMedicalRecord = await prisma.medicalRecord.create({
+          data: {
+            ...createData,
+            recordNumber: `HC-${randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`,
+          },
+        });
+      }
     }
 
     return NextResponse.json(newMedicalRecord, { status: 201 });
     
   } catch (error) {
     console.error('Error creando la historia clinica:', error);
+
+    const prismaError = error as { code?: string; message?: string };
+
+    if (prismaError.code === 'P2003') {
+      return NextResponse.json(
+        { error: 'El usuario asociado a la sesión no existe. Inicie sesión nuevamente.' },
+        { status: 401 }
+      );
+    }
+
+    if (prismaError.code === 'P2022') {
+      return NextResponse.json(
+        { error: 'La base de datos no está sincronizada con el modelo actual. Ejecute las migraciones pendientes.' },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      {
+        error: process.env.NODE_ENV === 'development' && prismaError.message
+          ? prismaError.message
+          : 'Error interno del servidor',
+      },
       { status: 500 }
     );
   }

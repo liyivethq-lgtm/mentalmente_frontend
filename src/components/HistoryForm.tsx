@@ -1,6 +1,6 @@
 // src/components/HistoryForm.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createHistory, updateHistory, getHistoryById, CreateHistoryData } from '@/services/historyService';
 import { format, differenceInYears, isDate } from 'date-fns';
 import { HistoryFormProps, MedicalRecordFormData } from '@/lib/type';
@@ -199,7 +199,7 @@ const HistoryForm: React.FC<ExtendedHistoryFormProps> = ({
   patientName: initialPatientName, 
   patientDocument: initialPatientDocument 
 }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading: isAuthLoading } = useAuth();
   const [formData, setFormData] = useState<MedicalRecordFormData>({
     patientName: initialPatientName || '',
     identificationType: 'Cédula',
@@ -279,6 +279,8 @@ const HistoryForm: React.FC<ExtendedHistoryFormProps> = ({
   const [currentHistoryId, setCurrentHistoryId] = useState<number | undefined>(historyId);
   const [isCreatingDraft, setIsCreatingDraft] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
+  const [draftRetryNonce, setDraftRetryNonce] = useState(0);
+  const draftAttemptedRef = useRef(false);
 
   // Calcular edad automáticamente cuando cambia la fecha de nacimiento
   useEffect(() => {
@@ -336,60 +338,97 @@ const HistoryForm: React.FC<ExtendedHistoryFormProps> = ({
     }
   }, [historyId]);
 
-  // Crear borrador automáticamente para nueva historia (sin historyId)
+  // Crear el borrador una sola vez al abrir una historia nueva.
+  // Importante: isCreatingDraft NO debe ser una dependencia; de lo contrario,
+  // un error cambia true -> false y vuelve a disparar este efecto indefinidamente.
   useEffect(() => {
-    if (!historyId && !currentHistoryId && !isCreatingDraft) {
-      const createDraft = async () => {
-        setIsCreatingDraft(true);
-        setDraftError(null);
-        try {
-          if (!user) throw new Error('Usuario no autenticado');
-          if (!user.id) throw new Error('ID de usuario no disponible');
+    if (historyId || currentHistoryId || isAuthLoading || draftAttemptedRef.current) return;
 
-          // Asegurar que el nombre no sea vacío (el backend lo exige)
-          const patientName = (initialPatientName && initialPatientName.trim()) || 'Paciente';
-          const identificationNumber = initialPatientDocument?.trim() || '';
+    draftAttemptedRef.current = true;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
-          const draftData: CreateHistoryData = {
-            patientName,
-            identificationNumber,
-            identificationType: 'Cédula',
-            recordNumber: `HC-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`,
-            userId: user.id,
-            diagnosis: '',
-            treatment: '',
-            notes: '',
-          };
+    const createDraft = async () => {
+      setIsCreatingDraft(true);
+      setDraftError(null);
 
-          const created = await createHistory(draftData);
-          if (created && created.id) {
-            setCurrentHistoryId(created.id);
-            setFormData(prev => ({
-              ...prev,
-              patientName: created.patientName || patientName,
-              identificationNumber: created.identificationNumber || identificationNumber,
-              recordNumber: created.recordNumber || prev.recordNumber,
-            }));
-            setShowConsent(true);
-          } else {
-            throw new Error('No se pudo crear el borrador de la historia');
-          }
-        } catch (error) {
-          console.error('Error creando borrador:', error);
-          const errorMessage = error instanceof Error ? error.message : '';
-          if (errorMessage.includes('usuario de la sesión ya no existe')) {
-            logout();
-            setDraftError('La sesión expiró. Inicie sesión nuevamente.');
-          } else {
-            setDraftError('No se pudo iniciar el proceso. Intente nuevamente.');
-          }
-        } finally {
-          setIsCreatingDraft(false);
+      try {
+        if (!user?.id) {
+          throw new Error('No fue posible validar el usuario autenticado.');
         }
-      };
-      createDraft();
-    }
-  }, [historyId, currentHistoryId, user, initialPatientName, initialPatientDocument, isCreatingDraft, logout]);
+
+        const patientName = initialPatientName?.trim() || 'Paciente';
+        const identificationNumber = initialPatientDocument?.trim() || 'Pendiente';
+
+        const draftData: CreateHistoryData = {
+          patientName,
+          identificationNumber,
+          identificationType: 'Cédula',
+          recordNumber: formData.recordNumber || `HC-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`,
+          userId: user.id,
+          diagnosis: '',
+          treatment: '',
+          notes: '',
+        };
+
+        const created = await createHistory(draftData, controller.signal);
+
+        if (!created?.id) {
+          throw new Error('El servidor no devolvió el identificador de la historia clínica.');
+        }
+
+        setCurrentHistoryId(created.id);
+        setFormData(prev => ({
+          ...prev,
+          patientName: created.patientName || patientName,
+          identificationNumber: created.identificationNumber || identificationNumber,
+          recordNumber: created.recordNumber || prev.recordNumber,
+        }));
+        setShowConsent(true);
+      } catch (error) {
+        if (controller.signal.aborted) {
+          setDraftError('El servidor tardó demasiado en preparar el formulario. Verifique la conexión e intente nuevamente.');
+          return;
+        }
+
+        console.error('Error creando borrador:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        const normalizedMessage = errorMessage.toLowerCase();
+
+        if (normalizedMessage.includes('sesión') || normalizedMessage.includes('no autorizado')) {
+          setDraftError('La sesión ya no es válida. Inicie sesión nuevamente.');
+          return;
+        }
+
+        setDraftError(errorMessage || 'No se pudo iniciar el proceso. Intente nuevamente.');
+      } finally {
+        window.clearTimeout(timeoutId);
+        setIsCreatingDraft(false);
+      }
+    };
+
+    void createDraft();
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [
+    historyId,
+    currentHistoryId,
+    isAuthLoading,
+    user?.id,
+    initialPatientName,
+    initialPatientDocument,
+    draftRetryNonce,
+    formData.recordNumber,
+  ]);
+
+  const handleRetryDraft = () => {
+    draftAttemptedRef.current = false;
+    setDraftError(null);
+    setDraftRetryNonce(prev => prev + 1);
+  };
 
   // Efecto para asegurar que los datos del paciente tengan valores antes de mostrar el consentimiento
   useEffect(() => {
@@ -597,17 +636,29 @@ const HistoryForm: React.FC<ExtendedHistoryFormProps> = ({
   }
 
   if (draftError) {
+    const requiresLogin = draftError.toLowerCase().includes('sesión');
+
     return (
       <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div className="bg-white rounded-3xl p-8 shadow-2xl max-w-md">
-          <h3 className="text-xl font-bold text-red-600 mb-4">Error</h3>
+        <div className="bg-white rounded-3xl p-8 shadow-2xl max-w-md w-[calc(100%-2rem)]">
+          <h3 className="text-xl font-bold text-red-600 mb-4">No fue posible preparar la historia</h3>
           <p className="text-gray-700 mb-6">{draftError}</p>
-          <button
-            onClick={onCancel}
-            className="w-full py-2 bg-[#bec5a4] text-white rounded-xl hover:bg-[#a0a78c]"
-          >
-            Cerrar
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={requiresLogin ? logout : handleRetryDraft}
+              className="flex-1 py-2.5 bg-[#bec5a4] text-white rounded-xl hover:bg-[#a0a78c]"
+            >
+              {requiresLogin ? 'Iniciar sesión' : 'Reintentar'}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50"
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       </div>
     );
